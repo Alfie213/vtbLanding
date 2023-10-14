@@ -6,6 +6,7 @@ export class BankQueue {
         this.initializeBankWindows(numBankWindows);
         this.acceptsDisability = acceptsDisability;
         this.initializeBankOperations(bankOperations);
+        this.windowTimes = [0, 0, 0];
 
         this.debugInformation();
     }
@@ -45,6 +46,15 @@ export class BankQueue {
         }
     }
 
+    GetWindowStatus(windowIndex) {
+        // let window = this.bankWindows[windowIndex];
+
+        // return `Window ${window.id}, time ${window.workingTime}`;
+
+        if (this.windowTimes[windowIndex] === 0) return `Window ${windowIndex} is free.`;
+        else return `Window ${windowIndex} time is ${this.windowTimes[windowIndex]}.`;
+    }
+
     checkOpportunityToServe(bankOperation) {
         return !(bankOperation.disability && !this.acceptsDisability);
         // if (bankOperation.disability && !this.acceptsDisability) {
@@ -68,6 +78,7 @@ export class BankQueue {
 
     sendBankOperationToBankWindow(bankOperation, bankWindowIndex) {
         this.bankWindows[bankWindowIndex].HandleBankOperation(bankOperation, () => this.onBankWindowFinished(bankWindowIndex));
+        this.windowTimes[bankWindowIndex] = bankOperation.operationType / 1000;
     }
 
     // Returns BankOperation from this.currentbankOperationsQueue. Else returns undefined.
@@ -84,6 +95,7 @@ export class BankQueue {
     }
 
     onBankWindowFinished(bankWindowIndex) {
+        this.windowTimes[bankWindowIndex] = 0;
         this.decreaseCurrentNumOfBankOperations();
         // console.log(`onBankWindowFinished!`);
         console.log(`BankWindow ${bankWindowIndex} finished.`);

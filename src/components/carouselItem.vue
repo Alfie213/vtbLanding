@@ -2,6 +2,10 @@
 import { defineProps, onMounted, reactive, ref } from "vue";
 import btnComponent from "./btnComponent.vue";
 
+import { BankQueue } from "../systems/BankWorkload/BankQueue.js";
+import { BankOperation } from "../systems/BankWorkload/BankOperation.js";
+import { OperationType } from "../systems/BankWorkload/BankOperation.js";
+
 const props = defineProps({
     address: String
 })
@@ -25,9 +29,9 @@ const mapElement = ref(null);
 onMounted(() => {
     ymaps.ready(init);
 });
-console.log(typeof latitude)
+// console.log(typeof latitude)
 function init(){
-    console.log("init");
+    // console.log("init");
     if (mapElement.value) {
         const myMap = new ymaps.Map(mapElement.value, {
             center: [latitude, longitude],
@@ -58,25 +62,51 @@ function init(){
 <script>
 export default {
   data() {
-    BankHandler();
+    InitBankQueue();
+    InfoUpdater();
     return {
       items: ["Первый блок", "Второй блок", "Третий блок"]
     };
   }
 };
 
+function GetRandomOperationType() {
+    const operationTypes = Object.values(OperationType);
+    const randomIndex = Math.floor(Math.random() * operationTypes.length);
+    const randomOperationType = operationTypes[randomIndex];
+
+    return randomOperationType;
+}
+
 let bankQueueInitialized = false;
+let bankQueue;
 function InitBankQueue(){
     if (bankQueueInitialized) return;
 
-    const bankQueue = new BankQueue()
-        
+    const bankOperations = [];
+    const numBankOperations = 2;
+    for (let i = 0; i < numBankOperations; i++) {
+        const bankOperation = new BankOperation(GetRandomOperationType(), false);
+        bankOperations.push(bankOperation);
+    }
+
+    const numBankWindows = 1; // 3 MAXIMUM!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    const acceptsDisability = true;
+    bankQueue = new BankQueue(numBankWindows, acceptsDisability, bankOperations);
+    bankQueue.StartHandleBankOperations();
+
+    bankQueueInitialized = true;
 }
 
-async function BankHandler() {
+let infoUpdaterLauched = false;
+const infoUpdaterDelay = 500; // 0.5 seconds.
+async function InfoUpdater() {
+    if (infoUpdaterLauched) return;
+
+    infoUpdaterLauched = true;
     while(true) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        console.log("5s");
+        console.log(bankQueue.GetWindowStatus(0));
+        await new Promise(resolve => setTimeout(resolve, infoUpdaterDelay));
     }
 }
 </script>
