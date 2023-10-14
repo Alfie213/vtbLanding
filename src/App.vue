@@ -20,7 +20,7 @@ const carouselClick = (event) => {
   let newActive = event.target
   let isItem = newActive.closest('.carousel__item');
 
-  if (!isItem || newActive.classList.contains('carousel__item_active')) {
+  if ((!isItem || newActive.classList.contains('carousel__item_active') || newActive.closest('.item'))) {
     return
   }
 
