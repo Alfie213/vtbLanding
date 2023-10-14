@@ -2,30 +2,38 @@
 import { defineProps, onMounted, reactive, ref } from "vue";
 import btnComponent from "./btnComponent.vue";
 
-import {}
-
 const props = defineProps({
     address: String
 })
+
+let latitude
+let longitude
+
+if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+    }, function(error) {
+        console.error('Ошибка геолокации:', error);
+    });
+} else {
+    console.error('Геолокация не поддерживается в этом браузере');
+}
 
 const mapElement = ref(null);
 
 onMounted(() => {
     ymaps.ready(init);
 });
-
-// Функция ymaps.ready() будет вызвана, когда
-// загрузятся все компоненты API, а также когда будет готово DOM-дерево.
+console.log(typeof latitude)
 function init(){
     console.log("init");
-    // Проверяем наличие элемента mapElement
     if (mapElement.value) {
-        // Создание карты
         const myMap = new ymaps.Map(mapElement.value, {
-            center: [55.76, 37.64],
-            zoom: 7
-        });
-    }
+            center: [latitude, longitude],
+            zoom: 10
+    });
+}
 }
 </script>
 
@@ -47,32 +55,32 @@ function init(){
     </div>
 </template>
 
-<script>
-export default {
-  data() {
-    BankHandler();
-    return {
-      items: ["Первый блок", "Второй блок", "Третий блок"]
-    };
-  }
-};
+// <script>
+// export default {
+//   data() {
+//     BankHandler();
+//     return {
+//       items: ["Первый блок", "Второй блок", "Третий блок"]
+//     };
+//   }
+// };
 
-let bankQueueInitialized = false;
-function InitBankQueue(){
-    if (bankQueueInitialized) return;
+// let bankQueueInitialized = false;
+// function InitBankQueue(){
+//     if (bankQueueInitialized) return;
 
-    const bankQueue = new BankQueue()
+//     const bankQueue = new BankQueue()
         
-    }
-}
+//     }
+// }
 
-async function BankHandler() {
-    while(true) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        console.log("5s");
-    }
-}
-</script>
+// async function BankHandler() {
+//     while(true) {
+//         await new Promise(resolve => setTimeout(resolve, 5000));
+//         console.log("5s");
+//     }
+// }
+// </script>
 
 <style>
     .blocks-container {
