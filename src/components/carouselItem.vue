@@ -2,6 +2,8 @@
 import { defineProps, onMounted, reactive, ref } from "vue";
 import btnComponent from "./btnComponent.vue";
 
+import {}
+
 const props = defineProps({
     address: String
 })
@@ -48,11 +50,28 @@ function init(){
 <script>
 export default {
   data() {
+    BankHandler();
     return {
       items: ["Первый блок", "Второй блок", "Третий блок"]
     };
   }
 };
+
+let bankQueueInitialized = false;
+function InitBankQueue(){
+    if (bankQueueInitialized) return;
+
+    const bankQueue = new BankQueue()
+        
+    }
+}
+
+async function BankHandler() {
+    while(true) {
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        console.log("5s");
+    }
+}
 </script>
 
 <style>
