@@ -1,15 +1,35 @@
 <script setup>
-import { defineProps, reactive } from "vue";
+import { defineProps, onMounted, reactive, ref } from "vue";
 import btnComponent from "./btnComponent.vue";
 
 const props = defineProps({
     address: String
 })
+
+const mapElement = ref(null);
+
+onMounted(() => {
+    ymaps.ready(init);
+});
+
+// Функция ymaps.ready() будет вызвана, когда
+// загрузятся все компоненты API, а также когда будет готово DOM-дерево.
+function init(){
+    console.log("init");
+    // Проверяем наличие элемента mapElement
+    if (mapElement.value) {
+        // Создание карты
+        const myMap = new ymaps.Map(mapElement.value, {
+            center: [55.76, 37.64],
+            zoom: 7
+        });
+    }
+}
 </script>
 
 <template>
     <div class="item">
-        <img class="item__map" src="/svg-editor-image (2).svg" alt="">
+        <div id="map" class="item__map" ref="mapElement"></div>
         <div class="item__content">
             <div class="item__content-addres">
                 <p class="item__content-addres--text">Адрес: {{ address }}</p>
