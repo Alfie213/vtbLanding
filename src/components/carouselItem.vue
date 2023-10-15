@@ -1,32 +1,54 @@
 <script setup>
-import { defineProps, onMounted, reactive, ref } from "vue";
+import { defineProps, onMounted, toRefs, ref, watch } from "vue";
 import btnComponent from "./btnComponent.vue";
 
-import {}
-
 const props = defineProps({
-    address: String
+    bankObj: Object
 })
+const {bankObj} = toRefs(props)
+console.log(bankObj.value.latitude)
+const isVisible = ref(false);
+
+// let latitude
+// let longitude
+
+// тут мы получаем долготу и широту нашего
+// if ('geolocation' in navigator) {
+//     navigator.geolocation.getCurrentPosition(function(position) {
+//         latitude = position.coords.latitude;
+//         longitude = position.coords.longitude;
+//     }, function(error) {
+//         console.error('Ошибка геолокации:', error);
+//     });
+// } else {
+//     console.error('Геолокация не поддерживается в этом браузере');
+// }
 
 const mapElement = ref(null);
-
 onMounted(() => {
     ymaps.ready(init);
 });
 
-// Функция ymaps.ready() будет вызвана, когда
-// загрузятся все компоненты API, а также когда будет готово DOM-дерево.
+
 function init(){
-    console.log("init");
-    // Проверяем наличие элемента mapElement
     if (mapElement.value) {
-        // Создание карты
         const myMap = new ymaps.Map(mapElement.value, {
-            center: [55.76, 37.64],
-            zoom: 7
-        });
+            center: [bankObj.value.latitude, bankObj.value.longitude],
+            zoom: 16
+        }, {
+            searchControlProvider: 'yandex#search'
+        })
+
+        myMap.geoObjects
+        .add(new ymaps.Placemark([bankObj.value.latitude, bankObj.value.longitude], {
+            balloonContent: `${bankObj.value.address}`
+        }, {
+            preset: '{islands#dotIcon}',
+            iconColor: '#735184'
+        }))
     }
 }
+const loc = "https://yandex.ru/maps/?rtext=~" + bankObj.value.latitude + "," + bankObj.value.longitude
 </script>
 
 <template>
@@ -34,8 +56,15 @@ function init(){
         <div id="map" class="item__map" ref="mapElement"></div>
         <div class="item__content">
             <div class="item__content-addres">
-                <p class="item__content-addres--text">Адрес: {{ address }}</p>
-                <btnComponent name="Проложить маршрут" />
+                <p class="item__content-addres--text">Адрес: {{ bankObj.address}}</p>
+            </div>
+            <div class="item__content-info">
+                <p class="item__content-addres--text">Дистанция: {{ bankObj.distance.toFixed(2) }} км.</p>
+                <p class="item__content-addres--text">Время в очереди: {{ bankObj.time }} мин.</p>
+                <p class="item__content-addres--text">Пандус: {{ bankObj.hasRamp === "N" ? "Отсутствует" : bankObj.hasRamp === "" ? "Отсутствует" : "Присутствует"}}</p>
+            </div>
+            <div class="item__content-link">
+                <a :href="loc" :target="_blank" class="btnItem">Проложить маршрут</a>
             </div>
         </div>
     </div>
@@ -46,33 +75,6 @@ function init(){
       </div>
     </div>
 </template>
-
-<script>
-export default {
-  data() {
-    BankHandler();
-    return {
-      items: ["Первый блок", "Второй блок", "Третий блок"]
-    };
-  }
-};
-
-let bankQueueInitialized = false;
-function InitBankQueue(){
-    if (bankQueueInitialized) return;
-
-    const bankQueue = new BankQueue()
-        
-    }
-}
-
-async function BankHandler() {
-    while(true) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        console.log("5s");
-    }
-}
-</script>
 
 <style>
     .blocks-container {
@@ -107,5 +109,27 @@ async function BankHandler() {
         color: #eee;
         font-size: 18px;
     }
+
+    .btnItem {
+    color: #fff;
+    background: linear-gradient(90deg, rgba(0,57,255,1) 0%, rgba(0,133,255,1) 100%);
+    padding: 10px 17px;
+    outline: none;
+    border: none;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    }
+
+    .item__content-link {
+        position: relative;
+        top: 15px;
+    }
     
+    .item__content-addres--text {
+        color: #ccc;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }   
 </style>

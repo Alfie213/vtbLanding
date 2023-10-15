@@ -6,6 +6,31 @@ import formComponent from './components/formComponent.vue';
 
 const state = {}
 let canSee = ref(true)
+let bankList = ref([])
+
+
+if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(async function(position) {
+      let response = await fetch("http://85.143.173.200:5000/offices/" + position.coords.latitude + "/" + position.coords.longitude, {
+        headers: {
+          'Access-Control-Allow-Origin': '*'
+        }
+      });
+
+      if (response.ok) { // если HTTP-статус в диапазоне 200-299
+        // получаем тело ответа (см. про этот метод ниже)
+        bankList.value = await response.json();
+      } else {
+        alert("Ошибка HTTP: " + response.status);
+      }
+    }, function(error) {
+        console.error('Ошибка геолокации:', error);
+    });
+} else {
+    console.error('Геолокация не поддерживается в этом браузере');
+}
+
+console.log(bankList)
 
 const carouselItems = ref([])
 const carouselList = ref([])
@@ -73,11 +98,11 @@ const handleUpdateData = (data) => {
     <div class="carousel">
       <formComponent v-if="canSee" @updateData="handleUpdateData"/>
       <ul v-show="!canSee" @click="carouselClick" class="carousel__list">
-        <li class="carousel__item" data-pos="-2"><carouselItem address="ул. Вишневая, д. 14"/></li>
-        <li class="carousel__item" data-pos="-1"><carouselItem address="ул. Арбат, д. 19"/></li>
-        <li class="carousel__item" data-pos="0"><carouselItem address="ул. Пушкина, д. Колотушкина"/></li>
-        <li class="carousel__item" data-pos="1"><carouselItem address="ул. Мира, д. 9"/></li>
-        <li class="carousel__item" data-pos="2"><carouselItem address="ул. Энтузиастов, д. 21"/></li>
+        <li class="carousel__item" data-pos="-2"><span data-col="4">4. Относительный вариант</span><carouselItem v-if="!canSee" :bankObj="bankList[3]"/></li>
+        <li class="carousel__item" data-pos="-1"><span data-col="5">5. Относительный вариант</span><carouselItem v-if="!canSee" :bankObj="bankList[4]"/></li>
+        <li class="carousel__item" data-pos="0"><span data-col="1">1. Лучший вариант</span><carouselItem v-if="!canSee" :bankObj="bankList[0]"/></li>
+        <li class="carousel__item" data-pos="1"><span data-col="2">2. Хороший вариант</span><carouselItem v-if="!canSee" :bankObj="bankList[1]"/></li>
+        <li class="carousel__item" data-pos="2"><span data-col="3">3. Хороший вариант</span><carouselItem v-if="!canSee" :bankObj="bankList[2]"/></li>
       </ul>
     </div>
   </div>
@@ -176,7 +201,7 @@ const handleUpdateData = (data) => {
     
   .carousel__item[data-pos="-2"],
   .carousel__item[data-pos="2"] {
-     opacity: 0.4;
+      opacity: 0.4;
       filter: blur(3px) grayscale(20%);
       display: none;
   }
@@ -196,6 +221,29 @@ const handleUpdateData = (data) => {
   .carousel__item[data-pos="-1"]:hover,
   .carousel__item[data-pos="1"]:hover {
     scale: 1.01;
+  }
+
+  .carousel__item span {
+    padding: 20px;
+    position: relative;
+    font-size: 20px;
+    font-weight: 700;
+    top: 10px;
+  }
+
+  .carousel__item span[data-col="1"] {
+    color: green;
+  }
+
+  .carousel__item span[data-col="2"],
+  .carousel__item span[data-col="3"]
+   {
+    color: orange;
+  }
+
+  .carousel__item span[data-col="4"],
+  .carousel__item span[data-col="5"] {
+    color: orangered
   }
 
 </style>
